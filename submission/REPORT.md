@@ -116,4 +116,4 @@ Mau chung cua ca FT thua la model qua tap trung vao format JSON va mien ticket. 
 - [ ] B2 dataset mien rieng
 - [ ] B3 reasoning-trace collapse
 - [ ] B4 quet rank co kiem soat
-- [ ] B5 HuggingFace Hub
+- [x] B5 HuggingFace Hub - link: https://huggingface.co/ngnkhanhly74/lab21-2A202601403-qwen35-triage-vi
