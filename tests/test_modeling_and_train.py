@@ -133,6 +133,16 @@ def test_sft_kwargs_use_the_post_v1_names():
     assert kw["loss_type"] == "chunked_nll"
 
 
+def test_biggpu_uses_standard_nll_for_short_l4_sequences():
+    """On the 9B/L4 path the measured context is shorter than TRL's fixed loss chunk.
+
+    `chunked_nll` then still builds a large fp32 chunked lm-head matmul and OOMs on
+    Colab L4, while standard NLL materializes the shorter batch x sequence logits.
+    """
+    kw = train.sft_config_kwargs(get_tier("BIGGPU"), SPECS["correct"], "out")
+    assert kw["loss_type"] == "nll"
+
+
 def test_assistant_only_loss_is_never_set():
     """Regression (F-10): TRL's assistant_only_loss silently supervises ZERO tokens on
     templates without {% generation %} markers, which includes Qwen3.5. The lab
@@ -242,8 +252,9 @@ def test_padding_free_on_sets_max_length_none(monkeypatch):
     """TRL rejects padding_free + max_length without packing; we pre-truncate, so None."""
     from labkit import device
     monkeypatch.setattr(device, "has_flash_attention", lambda: True)
-    kw = train.sft_config_kwargs(get_tier("BIGGPU"), SPECS["correct"], "o")
-    assert get_tier("BIGGPU").per_device_batch >= 2
+    from labkit.config import Tier
+    tier = Tier("FLASH", "m", 22.0, 192, 2, 8, "")
+    kw = train.sft_config_kwargs(tier, SPECS["correct"], "o")
     assert kw["padding_free"] is True and kw["max_length"] is None
 
 

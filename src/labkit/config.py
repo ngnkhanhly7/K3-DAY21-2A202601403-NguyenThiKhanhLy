@@ -65,8 +65,8 @@ TIERS: dict[str, Tier] = {
         model_id="Qwen/Qwen3.5-9B",
         vram_gb_bf16_lora=22.0,
         max_length=192,
-        per_device_batch=2,
-        grad_accum=8,
+        per_device_batch=1,
+        grad_accum=16,
         notes="L4 22.5 GB / A100 40 GB / RTX 3090-4090.",
     ),
 }

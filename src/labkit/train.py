@@ -14,7 +14,8 @@ The defaults encode the deck:
   * the loss mask comes from `labkit.data.to_training_dataset()`, NOT from TRL's
     `assistant_only_loss` — that flag silently supervises nothing on templates without
     `{% generation %}` markers, which includes Qwen3.5 (see check_mask_agreement.py)
-  * `loss_type="chunked_nll"` (TRL >= 1.7 default; ~30-50% less VRAM)
+  * `loss_type="chunked_nll"` for normal contexts; `"nll"` for the short BIGGPU/L4
+    path where TRL's fixed loss chunk is larger than our measured sequence length
 """
 from __future__ import annotations
 
@@ -109,7 +110,7 @@ def sft_config_kwargs(
         report_to="none",
         seed=seed,
         packing=False,       # we supply pre-tokenized labels -- see the note below
-        loss_type="chunked_nll",                  # TRL >= 1.7 default; big VRAM saving
+        loss_type="nll" if tier.name == "BIGGPU" else "chunked_nll",
         gradient_checkpointing=True,
     )
     # `warmup_ratio` does not exist any more. transformers v5 / TRL 1.10 expose only

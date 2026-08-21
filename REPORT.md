@@ -1,7 +1,16 @@
-# Báo cáo quyết định
+# Configuration Decision Notes
 
-## Giải quyết lỗi OOM ở NB3
-Trong quá trình huấn luyện với Qwen3.5-9B trên BIGGPU, cấu hình mặc định đặt `max_length = 2048`.
-Tuy nhiên, bước NB1 báo cáo rằng `p95 = 192` và gợi ý `max_length = 256`. Do đó, giữ `max_length = 2048` không chỉ lãng phí bộ nhớ mà còn gây ra lỗi **CUDA out of memory** (OOM) ở NB3 vì batch size và số bước padding quá lớn so với thực tế của dataset.
+## NB3 OOM on Colab L4
 
-**Lựa chọn:** Tôi đã giảm `max_length` của cấu hình `BIGGPU` trong `src/labkit/config.py` xuống `256`. Lựa chọn này vẫn đảm bảo bao phủ >95% các chuỗi trong dataset mà không bị cắt cụt quá nhiều, đồng thời giúp giảm footprint bộ nhớ và giải quyết được lỗi OOM.
+The BIGGPU path trains Qwen3.5-9B on an NVIDIA L4 with about 22 GB of VRAM. NB1
+measured p95 = 192 tokens, while the rounded suggestion was 256. The 256-token run
+still OOMed at the first NB3 optimizer step, so the BIGGPU tier now uses
+`max_length=192`, which matches the measured p95 exactly.
+
+After that, NB3 still OOMed with a physical batch of 2. The next change keeps the
+effective batch at 16 for experiment fairness, but lowers the physical batch:
+`per_device_batch=1`, `grad_accum=16`.
+
+The remaining OOM happened inside TRL's `chunked_nll` path during a large fp32
+`lm_head` matmul. For this short 192-token BIGGPU/L4 path, standard `loss_type="nll"`
+is used instead. T4 and the normal lab path keep `chunked_nll`.
