@@ -1,0 +1,25 @@
+{
+  "tier": "BIGGPU",
+  "model": "Qwen/Qwen3.5-9B",
+  "baseline_a": {
+    "target": 0.0,
+    "regression": 0.7422222222222222,
+    "format": 0.0,
+    "latency_ms": 3459.8455249199837,
+    "n": 50,
+    "extra": {}
+  },
+  "baseline_b": {
+    "target": 0.82,
+    "regression": 0.7422222222222222,
+    "format": 1.0,
+    "latency_ms": 972.5976665200506,
+    "n": 50,
+    "extra": {}
+  },
+  "optimized_prompt_sha": "719e74d3b6232053",
+  "n_target": 50,
+  "n_regression": 15,
+  "eval_limit": null,
+  "smoke_mode": false
+}
